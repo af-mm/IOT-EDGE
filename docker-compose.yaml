@@ -1,0 +1,58 @@
+version: "3.7"
+services:
+
+# external Kafka broker
+
+  ext_zookeeper:
+    image: 'bitnami/zookeeper'
+#    ports:
+#      - '2182:2181'
+    volumes:
+      - './data/ext_zookeeper:/bitnami:rw'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      
+  ext_kafka:
+    image: 'bitnami/kafka'
+    ports:
+      - '9093:9093'
+      - '29093:29093'
+    volumes:
+      - './data/ext_kafka:/bitnami:rw'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=ext_zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9093,PLAINTEXT_HOST://:29093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://ext_kafka:9093,PLAINTEXT_HOST://localhost:29093
+    depends_on:
+      - ext_zookeeper
+      
+# internal Kafka broker
+
+  int_zookeeper:
+    image: 'bitnami/zookeeper'
+#    ports:
+#      - '2181:2181'
+    volumes:
+      - './data/int_zookeeper:/bitnami:rw'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      
+  int_kafka:
+    image: 'bitnami/kafka'
+    ports:
+      - '9092:9092'
+      - '29092:29092'
+    volumes:
+      - './data/int_kafka:/bitnami:rw'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=int_zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://int_kafka:9092,PLAINTEXT_HOST://localhost:29092
+    depends_on:
+      - int_zookeeper
+      
+  
