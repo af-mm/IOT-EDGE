@@ -1,4 +1,7 @@
-mkdir -p  data
-mkdir -p data/ext_kafka data/ext_zookeeper data/int_kafka data/int_zookeeper
+mkdir -p data
+mkdir -p data/cloud-zookeeper
+mkdir -p data/cloud-kafka
+mkdir -p data/edge-zookeeper
+mkdir -p data/edge-kafka
 chmod o+w data/*
 

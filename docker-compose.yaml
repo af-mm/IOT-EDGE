@@ -1,58 +1,90 @@
 version: "3.7"
 services:
 
-# external Kafka broker
+# cloud Kafka broker
 
-  ext_zookeeper:
+  cloud-zookeeper:
     image: 'bitnami/zookeeper'
 #    ports:
-#      - '2182:2181'
+#      - '${CLOUD_ZOOKEEPER_EXT_PORT}:2181'
     volumes:
-      - './data/ext_zookeeper:/bitnami:rw'
+      - './data/cloud-zookeeper:/bitnami:rw'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  cloud-kafka:
+    image: 'bitnami/kafka'
+    ports:
+      - '${CLOUD_KAFKA_INT_PORT}:${CLOUD_KAFKA_INT_PORT}'
+      - '${CLOUD_KAFKA_EXT_PORT}:${CLOUD_KAFKA_EXT_PORT}'
+    volumes:
+      - './data/cloud-kafka:/bitnami:rw'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=cloud-zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:${CLOUD_KAFKA_INT_PORT},PLAINTEXT_HOST://:${CLOUD_KAFKA_EXT_PORT}
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://cloud-kafka:${CLOUD_KAFKA_INT_PORT},PLAINTEXT_HOST://localhost:${CLOUD_KAFKA_EXT_PORT}
+    depends_on:
+      - cloud-zookeeper
+      
+# edge Kafka broker
+
+  edge-zookeeper:
+    image: 'bitnami/zookeeper'
+#    ports:
+#      - '${EDGE_ZOOKEEPER_EXT_PORT}:2181'
+    volumes:
+      - './data/edge-zookeeper:/bitnami:rw'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
       
-  ext_kafka:
+  edge-kafka:
     image: 'bitnami/kafka'
     ports:
-      - '9093:9093'
-      - '29093:29093'
+      - '${EDGE_KAFKA_INT_PORT}:${EDGE_KAFKA_INT_PORT}'
+      - '${EDGE_KAFKA_EXT_PORT}:${EDGE_KAFKA_EXT_PORT}'
     volumes:
-      - './data/ext_kafka:/bitnami:rw'
+      - './data/edge-kafka:/bitnami:rw'
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=ext_zookeeper:2181
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=edge-zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9093,PLAINTEXT_HOST://:29093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://ext_kafka:9093,PLAINTEXT_HOST://localhost:29093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:${EDGE_KAFKA_INT_PORT},PLAINTEXT_HOST://:${EDGE_KAFKA_EXT_PORT}
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://edge-kafka:${EDGE_KAFKA_INT_PORT},PLAINTEXT_HOST://localhost:${EDGE_KAFKA_EXT_PORT}
     depends_on:
-      - ext_zookeeper
+      - edge-zookeeper
       
-# internal Kafka broker
+# kafka-repeater from cloud to edge
 
-  int_zookeeper:
-    image: 'bitnami/zookeeper'
-#    ports:
-#      - '2181:2181'
-    volumes:
-      - './data/int_zookeeper:/bitnami:rw'
+  input-repeater:
+    build: ./kafka-repeater
+    image: iot-edge-kafka-repeater
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      
-  int_kafka:
-    image: 'bitnami/kafka'
-    ports:
-      - '9092:9092'
-      - '29092:29092'
-    volumes:
-      - './data/int_kafka:/bitnami:rw'
-    environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=int_zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:29092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://int_kafka:9092,PLAINTEXT_HOST://localhost:29092
+      - KR_HOST_FROM=cloud-kafka
+      - KR_PORT_FROM=${CLOUD_KAFKA_INT_PORT}
+#      - KR_GROUP_ID_FROM=123
+      - KR_HOST_TO=edge-kafka
+      - KR_PORT_TO=${EDGE_KAFKA_INT_PORT}
+      - KR_TOPIC_FROM=${CLOUD_KAFKA_INPUT_TOPIC}
+      - KR_TOPIC_TO=edge-input
     depends_on:
-      - int_zookeeper
+      - cloud-kafka
+      - edge-kafka
       
+# kafka-repeater from edge to cloud
+
+  output-repeater:
+    image: iot-edge-kafka-repeater
+    environment:
+      - KR_HOST_FROM=edge-kafka
+      - KR_PORT_FROM=${EDGE_KAFKA_INT_PORT}
+#      - KR_GROUP_ID_FROM=123
+      - KR_HOST_TO=cloud-kafka
+      - KR_PORT_TO=${CLOUD_KAFKA_INT_PORT}
+      - KR_TOPIC_FROM=edge-output
+      - KR_TOPIC_TO=${CLOUD_KAFKA_OUTPUT_TOPIC}
+    depends_on:
+      - cloud-kafka
+      - edge-kafka
   

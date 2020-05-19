@@ -1,19 +1,21 @@
+import argparse
+import uuid
 from confluent_kafka import Consumer
 import json
-import sys
-import uuid
 
-if len(sys.argv) < 3:
-    print('No topics given')
-    print('{} host:port topic1 [topic2 [topic3]]'.format(sys.argv[0]))
-    exit(0)
+args = argparse.ArgumentParser(description='Kafka subscriber')
+args.add_argument('-H', '--host', help='host name (default = localhost)', default='localhost')
+args.add_argument('-P', '--port', help='port (default = 9092)', type=int, default=9092)
+args.add_argument('-G', '--group_id', help='group id (default = random uuid)', default=uuid.uuid1())
+args.add_argument('topics', help='kafka topics to subscribe', nargs='+')
+args = args.parse_args()
 
 client = Consumer({
-    'bootstrap.servers': sys.argv[1],
-    'group.id': uuid.uuid1()
+    'bootstrap.servers': '{}:{}'.format(args.host, args.port),
+    'group.id': args.group_id
 })
 
-client.subscribe(sys.argv[2:])
+client.subscribe(args.topics)
 
 try:
     while True:
@@ -25,14 +27,14 @@ try:
         else:
             topic = msg.topic()
 #             key = msg.key()
-            payload = msg.value()
+            payload = msg.value().decode('utf-8')
                         
             print('{}: {}'.format(topic, payload))
             try:
                 print('json = {}'.format(json.loads(payload)))
             except:
                 pass
-            print()
+#             print()
 except KeyboardInterrupt:
     pass
 finally:

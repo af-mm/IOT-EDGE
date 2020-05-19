@@ -1,16 +1,16 @@
+import argparse
 from confluent_kafka import Producer
-import sys
 
-if len(sys.argv) != 4:
-    print('{} host:port topic payload'.format(sys.argv[0]))
-    exit(0)
+args = argparse.ArgumentParser(description='Kafka publisher')
+args.add_argument('-H', '--host', help='host name (default = localhost)', default='localhost')
+args.add_argument('-P', '--port', help='port (default = 9092)', type=int, default=9092)
+args.add_argument('topic', help='Kafka topic')
+args.add_argument('message', help='Kafka message')
+args = args.parse_args()
 
 client = Producer({
-    'bootstrap.servers': sys.argv[1]
+    'bootstrap.servers': '{}:{}'.format(args.host, args.port)
 })
 
-topic = sys.argv[2]
-payload = sys.argv[3]
-
-client.produce(topic, value=payload)
+client.produce(args.topic, value=args.message)
 client.flush()

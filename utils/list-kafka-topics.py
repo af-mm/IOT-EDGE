@@ -1,13 +1,13 @@
+import argparse
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka import KafkaException
-import sys
-from config import CFG
 
-if len(sys.argv) != 2:
-    print('{} host:port'.format(sys.argv[0]))
-    exit(0)
+args = argparse.ArgumentParser(description='Create Kafka topics')
+args.add_argument('-H', '--host', help='host name (default = localhost)', default='localhost')
+args.add_argument('-P', '--port', help='port (default = 9092)', type=int, default=9092)
+args = args.parse_args()
 
-client = AdminClient({'bootstrap.servers': sys.argv[1]})
+client = AdminClient({'bootstrap.servers': '{}:{}'.format(args.host, args.port)})
 
 topics = client.list_topics().topics
 print(topics)
