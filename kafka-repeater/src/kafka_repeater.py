@@ -28,6 +28,10 @@ if args.topic_from == args.topic_to:
     print('ERROR: topic_from cannot be equal to topic_to')
     exit(1)
 
+print()
+print('----------------------------------------')
+print('Args: {}'.format(args))
+
 c = Consumer({
     'bootstrap.servers': '{}:{}'.format(args.host_from, args.port_from),
     'group.id': args.group_id_from
@@ -38,10 +42,7 @@ p = Producer({
     'bootstrap.servers': '{}:{}'.format(args.host_to, args.port_to)
 })
 
-print()
-print('----------------------------------------')
 print('Kafka repeater started')
-print('Args: {}'.format(args))
 print('----------------------------------------')
 print()
 

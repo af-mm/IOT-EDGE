@@ -30,10 +30,10 @@ try:
             payload = msg.value().decode('utf-8')
                         
             print('{}: {}'.format(topic, payload))
-            try:
-                print('json = {}'.format(json.loads(payload)))
-            except:
-                pass
+#             try:
+#                 print('json = {}'.format(json.loads(payload)))
+#             except:
+#                 pass
 #             print()
 except KeyboardInterrupt:
     pass

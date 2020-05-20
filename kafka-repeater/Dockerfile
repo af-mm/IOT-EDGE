@@ -14,4 +14,4 @@ ENV KR_HOST_FROM=localhost \
 	KR_TOPIC_FROM=0 \
 	KR_TOPIC_TO=0
 	
-CMD [ "python3", "-u", "./kafka-repeater.py", "0", "0", "--use_env" ]
+CMD [ "python3", "-u", "./kafka_repeater.py", "0", "0", "--use_env" ]

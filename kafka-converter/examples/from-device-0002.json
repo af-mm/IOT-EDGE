@@ -1,0 +1,8 @@
+{
+	"uuid": "device-0002",
+	"actions": {
+		"light1": "1-2-3",		
+		"light2": "3-2-1"
+	}
+}
+

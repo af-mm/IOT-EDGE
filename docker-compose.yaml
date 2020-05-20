@@ -87,4 +87,41 @@ services:
     depends_on:
       - cloud-kafka
       - edge-kafka
-  
+
+# kafka-converter from edge to devices
+
+  input-converter:
+    build: ./kafka-converter
+    image: iot-edge-kafka-converter
+    environment:
+      - KC_HOST=edge-kafka
+      - KC_PORT=${EDGE_KAFKA_INT_PORT}
+#      - KC_GROUP_ID=123
+      - KC_MAP=FORWARD_MAP
+      - KC_TOPICS=edge-input
+    depends_on:
+      - edge-kafka
+
+# kafka-converter from devices to edge
+
+  output-converter:
+    image: iot-edge-kafka-converter
+    environment:
+      - KC_HOST=edge-kafka
+      - KC_PORT=${EDGE_KAFKA_INT_PORT}
+#      - KC_GROUP_ID=123
+      - KC_MAP=BACKWARD_MAP
+      - KC_TOPICS=mqtt-output,modbus-output
+    depends_on:
+      - edge-kafka
+
+# MQTT broker
+
+  mqtt_broker:
+    image: eclipse-mosquitto
+    ports:
+      - "${EDGE_MQTT_BROKER_PORT}:1883"
+
+
+
+

@@ -1,0 +1,5 @@
+KC_HOST=localhost
+KC_PORT=9092
+KC_GROUP_ID=123
+KC_MAP=localhost
+KC_TOPICS=test,test2
