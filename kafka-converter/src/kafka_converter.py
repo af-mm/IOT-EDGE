@@ -68,7 +68,7 @@ try:
 #             key = msg.key()
             payload = msg.value().decode('utf-8')
             
-            print('IN: {} -> {}'.format(topic, payload))
+            print('IN: {}: {}'.format(topic, payload))
             
             try:
                 d = json.loads(payload)
@@ -119,7 +119,7 @@ try:
                 p.produce(mapEntry[actionName]['topic'], value=d)
                 p.flush()
             
-                print('OUT: {} -> {}'.format(mapEntry[actionName]['topic'], d))
+                print('OUT: {}: {}'.format(mapEntry[actionName]['topic'], d))
             
 except KeyboardInterrupt:
     print('KeyboardInterrupt caught')

@@ -84,7 +84,7 @@ def f(d):
     parts = d.split('-')
     if len(parts) != 3:
         return None
-    return {'a': parts[2], 'b': parts[1], 'c': parts[1]}
+    return {'a': parts[2], 'b': parts[1], 'c': parts[0]}
                 """
         }
     }

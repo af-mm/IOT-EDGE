@@ -117,11 +117,27 @@ services:
 
 # MQTT broker
 
-  mqtt_broker:
+  mqtt-broker:
     image: eclipse-mosquitto
     ports:
       - "${EDGE_MQTT_BROKER_PORT}:1883"
 
+# Kafka MQTT connector
 
+  mqtt-connector:
+    build: ./kafka-mqtt-connector
+    image: iot-edge-kafka-mqtt-connector
+    environment:
+      - KMC_KAFKA_HOST=edge-kafka
+      - KMC_KAFKA_PORT=${EDGE_KAFKA_INT_PORT}
+#      - KMC_KAFKA_GROUP_ID=123
+      - KMC_MQTT_HOST=mqtt-broker
+      - KMC_MQTT_PORT=${EDGE_MQTT_BROKER_PORT}
+      - KMC_KAFKA_INPUT_TOPIC=mqtt-input
+      - KMC_KAFKA_OUTPUT_TOPIC=mqtt-output
+    depends_on:
+      - edge-kafka
+      - mqtt-broker
+  
 
 
