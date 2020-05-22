@@ -8,7 +8,7 @@
 
 Clone this repository:
 ~~~~
-dsdsd
+git clone https://github.com/af-mm/IOT-EDGE.git
 ~~~~
 
 Create data directories:
