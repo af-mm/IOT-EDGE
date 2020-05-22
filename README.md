@@ -1,4 +1,4 @@
 # IOT-EDGE
 
 
-![Description](master/images/1.png)
+![Description](images/1.png)
