@@ -15,8 +15,8 @@ for fileName in args.files:
                 print('\\r', end='')
             elif ch == '\t':
                 print('\\t', end='')
-            elif ch == '"':
-                print('\\"', end='')
+            elif ch == '\'':
+                print('\\\'', end='')
             elif ch == '\0':
                 pass
             else:
